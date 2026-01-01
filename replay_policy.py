@@ -14,15 +14,15 @@ dummy = [(0.0, 0.0)] * N_POTS
 env = Nav2RLEnv(MAP_YAML, dummy, noise=0)
 
 # Now generate real pots using the map inside env
-#env.pot_positions = generate_random_pots(env.map, N_POTS)
-env.pot_positions = generate_grid_pots_auto(env.map, rows=3, cols=2, spacing=1.0, min_clearance=1.0)
+env.pot_positions = generate_random_pots(env.map, N_POTS)
+#env.pot_positions = generate_grid_pots_auto(env.map, rows=3, cols=2, spacing=1.0, min_clearance=1.0)
 env.n_pots = N_POTS
 env.action_dim = N_POTS
 env.mask = np.ones(N_POTS, dtype=np.float32)
 
 # Load agent
 agent = DQNAgent(env.state_dim, env.action_dim)
-agent.policy.load_state_dict(torch.load("./trained_model/dqn_nav2_policy.pth"))
+agent.policy.load_state_dict(torch.load("./trained_model/checkpoint_ep10000.pth"))
 
 robot_history = []
 path_history = []

@@ -23,23 +23,29 @@ class Nav2RLEnv:
 
         self.step_count = 0
 
+        self.last_action = None
+
     def reset(self):
         self.mask[:] = 1.0
         self.step_count = 0
+        self.last_action = None
         return self._get_state()
 
     def step(self, action):
 
         self.step_count += 1
 
-        # Invalid action (pot already collected)
+        # not moving
+        if self.last_action is not None and action == self.last_action:
+            reward = -1000
+
+        # pot already collected
         if self.mask[action] == 0.0:
-            reward = -200
+            reward = -1000
             done = False
 
             # Terminate if too many invalid steps
             if self.step_count >= self.n_pots * 2:
-                done = True
                 reward -= 100
 
             return self._get_state(), reward, done
@@ -73,11 +79,13 @@ class Nav2RLEnv:
         done = (remaining == 0)
 
         if done:
-            reward += 5000
+            reward += 1000
         else:
-            if self.step_count >= self.n_pots * 2:
+            if self.step_count >= self.n_pots * 10:
                 done = True
                 reward -= 100
+
+        self.last_action = action
 
         return self._get_state(), reward, done
     

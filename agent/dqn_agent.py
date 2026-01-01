@@ -10,7 +10,7 @@ class DQNAgent:
     def __init__(self, state_dim, action_dim):
         self.gamma = 0.98
         self.epsilon = 1.0
-        self.eps_min = 0.3
+        self.eps_min = 0.1
         self.eps_decay = 0.998
         self.batch_size = 64
 
