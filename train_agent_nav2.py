@@ -8,7 +8,7 @@ import torch
 
 MAP_YAML = "maps/room2.yaml"
 N_POTS   = 6
-EPISODES = 15000
+EPISODES = 8000
 
 dummy_pots = [(0,0)] * N_POTS
 
@@ -67,7 +67,7 @@ for ep in range(EPISODES):
             min_clearance=1.0
         )
 
-    if ep % 5000 == 0:
+    if ep % 2000 == 0:
         torch.save(agent.policy.state_dict(), f"{save_dir}/checkpoint_ep{ep}.pth")
         print(f"Checkpoint saved at episode {ep}")
 

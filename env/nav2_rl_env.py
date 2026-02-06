@@ -35,59 +35,62 @@ class Nav2RLEnv:
 
         self.step_count += 1
 
-        # not moving
+        # repeated action penalty
         if self.last_action is not None and action == self.last_action:
-            reward = -1000
+            reward = -200     
+            done = False
+            return self._get_state(), reward, done
 
         # pot already collected
         if self.mask[action] == 0.0:
-            reward = -1000
+            reward = -200
             done = False
-
-            # Terminate if too many invalid steps
-            if self.step_count >= self.n_pots * 2:
-                reward -= 100
-
             return self._get_state(), reward, done
 
+        # valid action
         start_xy = self.robot_world
         goal_xy  = self.pot_positions[action]
 
         path_cost = self._compute_path_cost(start_xy, goal_xy)
-        path_cost = min(path_cost, 10)  # cap max cost
+        path_cost = min(path_cost, 5.0)                # smaller cap
         path_cost *= (1.0 + np.random.uniform(-self.noise, self.noise))
 
+        # update robot location + mask
         self.robot_world = np.array(goal_xy, dtype=np.float32)
         self.mask[action] = 0.0
 
-        reward = 0
-        reward -= path_cost * 0.1            # scaled path penalty
-        reward += 300                        # new pot bonus
-        reward -= 1                           # small step penalty
+        # reward shaping
+        reward  = 0
+        reward -= path_cost * 0.1                      # small path penalty
+        reward += 20                                   # new pot bonus
+        reward -= 1                                    # step penalty
 
         remaining = np.sum(self.mask)
-        reward -= remaining * 2              # penalty for unfinished job
+        reward -= remaining * 3                        # stronger but reasonable
 
+        # distance shaping
         if remaining > 0:
             distances = [
                 np.linalg.norm(self.robot_world - np.array(self.pot_positions[i]))
                 for i in range(self.n_pots) if self.mask[i] == 1.0
             ]
             min_distance = min(distances)
-            reward -= min_distance * 0.05      # distance to closest pot penalty
+            reward -= min_distance * 0.02              # smaller shaping
 
+        # termination
         done = (remaining == 0)
 
         if done:
-            reward += 1000
+            reward += 50                               # final bonus
         else:
-            if self.step_count >= self.n_pots * 10:
+            if self.step_count >= self.n_pots * 3:     # MAX 18 STEPS for 6 pots
                 done = True
-                reward -= 100
+                reward -= 50
 
         self.last_action = action
 
         return self._get_state(), reward, done
+
     
     def _get_state(self):
         pots_flat = np.array(self.pot_positions).flatten().astype(np.float32)

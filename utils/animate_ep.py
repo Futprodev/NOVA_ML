@@ -63,7 +63,7 @@ def animate_episode(nav2_map, robot_history, pot_positions, pot_order, path_hist
     ani = animation.FuncAnimation(fig, update, frames=frames, interval=1200, repeat=False)
 
     if save_gif:
-        ani.save("episode_animation.gif", writer="pillow", fps=1)
+        ani.save("episode_animation2.gif", writer="pillow", fps=1)
         print("GIF saved: episode_animation.gif")
 
     plt.show()
